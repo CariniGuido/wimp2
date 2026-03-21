@@ -5,17 +5,17 @@ import type { Pet } from '@/lib/types'
 import type { Metadata } from 'next'
 
 interface PageProps {
-  params: Promise<{ qr_code: string }>
+  params: { qr_code: string }
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { qr_code } = await params
+  const { qr_code } = params
   const supabase = await createClient()
-  
+
   const { data: pet } = await supabase
     .from('pets')
     .select('name, species, photo_url')
-    .eq('qr_code', qr_code)
+    .eq('qr_code', qr_code.trim())
     .single()
 
   if (!pet) {
@@ -26,21 +26,20 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   return {
     title: `${pet.name} - PetTag`,
-    description: `Perfil de ${pet.name}. Si encontraste a esta mascota, contacta a su dueno.`,
+    description: `Perfil de ${pet.name}. Si encontraste a esta mascota, contacta a su dueño.`,
     openGraph: {
       title: `${pet.name} - PetTag`,
-      description: `Perfil de ${pet.name}. Si encontraste a esta mascota, contacta a su dueno.`,
+      description: `Perfil de ${pet.name}. Si encontraste a esta mascota, contacta a su dueño.`,
       images: pet.photo_url ? [pet.photo_url] : [],
     },
   }
 }
 
 export default async function PublicPetPage({ params }: PageProps) {
-  const { qr_code } = await params
+  const { qr_code } = params
   const supabase = await createClient()
 
-  // Get pet with owner info
-  const { data: pet } = await supabase
+  const { data: pet, error } = await supabase
     .from('pets')
     .select(`
       *,
@@ -49,15 +48,21 @@ export default async function PublicPetPage({ params }: PageProps) {
         phone
       )
     `)
-    .eq('qr_code', qr_code)
+    .eq('qr_code', qr_code.trim())
     .single()
 
-  if (!pet) {
+  if (error || !pet) {
+    console.log('Error buscando mascota:', error)
     notFound()
   }
 
-  // Log the scan (we'll do this server-side for better reliability)
-  // The actual location will be captured client-side
-
-  return <PublicPetProfile pet={pet as Pet & { profiles: { full_name: string | null; phone: string | null } }} />
+  return (
+    <PublicPetProfile
+      pet={
+        pet as Pet & {
+          profiles: { full_name: string | null; phone: string | null }
+        }
+      }
+    />
+  )
 }
