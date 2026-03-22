@@ -100,6 +100,19 @@ export function PetMap({ scans, events }: PetMapProps) {
     )
   }
 
+  // Paw icon using divIcon
+  const getPawIcon = (type: string) => {
+    const L = require('leaflet')
+    const emoji = type === 'lost' ? '🚨' : type === 'found' ? '✅' : type === 'sighting' ? '👁️' : '🐾'
+    return L.divIcon({
+      html: `<div style="font-size:28px;line-height:1;filter:drop-shadow(0 2px 2px rgba(0,0,0,0.3))">${emoji}</div>`,
+      className: '',
+      iconSize: [30, 30],
+      iconAnchor: [15, 15],
+      popupAnchor: [0, -15],
+    })
+  }
+
   return (
     <>
       {/* Mini mapa */}
@@ -119,11 +132,14 @@ export function PetMap({ scans, events }: PetMapProps) {
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               />
               {points.map((point) => (
-                <Marker key={point.id} position={[point.lat, point.lng]} />
+                <Marker
+                  key={point.id}
+                  position={[point.lat, point.lng]}
+                  icon={getPawIcon(point.type)}
+                />
               ))}
             </MapContainer>
           </div>
-          {/* Overlay con botón expandir */}
           <div className="absolute inset-0 bg-black/10 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
             <div className="bg-white rounded-full p-2 shadow-lg">
               <Maximize2 className="h-5 w-5 text-gray-700" />
@@ -162,7 +178,11 @@ export function PetMap({ scans, events }: PetMapProps) {
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
                 {points.map((point) => (
-                  <Marker key={point.id} position={[point.lat, point.lng]}>
+                  <Marker
+                    key={point.id}
+                    position={[point.lat, point.lng]}
+                    icon={getPawIcon(point.type)}
+                  >
                     <Popup>
                       <div className="text-sm">
                         <p className="font-medium">{getTypeLabel(point.type)}</p>
