@@ -116,7 +116,10 @@ export function PetMap({ scans, events }: PetMapProps) {
   return (
     <>
       {/* Mini mapa */}
-      <Card className="overflow-hidden cursor-pointer" onClick={() => setExpanded(true)}>
+      <Card 
+  className={`overflow-hidden cursor-pointer transition-opacity duration-300 ${expanded ? 'opacity-20' : 'opacity-100'}`}
+  onClick={() => setExpanded(true)}
+>
         <CardContent className="p-0 relative">
           <div className="h-[200px] pointer-events-none">
             <MapContainer
