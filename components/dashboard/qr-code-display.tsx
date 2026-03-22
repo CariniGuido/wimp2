@@ -13,13 +13,15 @@ interface QRCodeDisplayProps {
 
 export function QRCodeDisplay({ pet }: QRCodeDisplayProps) {
   const qrRef = useRef<HTMLDivElement>(null)
-  const petUrl = `${window.location.origin}/pet/${pet.qr_code}`
+  
+  // Safe for SSR - window only exists in browser
+  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://wimp2-one.vercel.app'
+  const petUrl = `${origin}/pet/${pet.qr_code}`
 
   const handleDownload = () => {
     const svg = qrRef.current?.querySelector('svg')
     if (!svg) return
 
-    // Create canvas from SVG
     const canvas = document.createElement('canvas')
     const ctx = canvas.getContext('2d')
     if (!ctx) return
@@ -29,25 +31,19 @@ export function QRCodeDisplay({ pet }: QRCodeDisplayProps) {
     img.crossOrigin = 'anonymous'
     
     img.onload = () => {
-      // Add padding
       const padding = 40
       canvas.width = img.width + padding * 2
       canvas.height = img.height + padding * 2
 
-      // White background
       ctx.fillStyle = 'white'
       ctx.fillRect(0, 0, canvas.width, canvas.height)
-
-      // Draw QR code
       ctx.drawImage(img, padding, padding)
 
-      // Add pet name at bottom
       ctx.fillStyle = '#1a1a1a'
       ctx.font = 'bold 20px sans-serif'
       ctx.textAlign = 'center'
       ctx.fillText(pet.name, canvas.width / 2, canvas.height - 12)
 
-      // Download
       const link = document.createElement('a')
       link.download = `qr-${pet.name.toLowerCase().replace(/\s+/g, '-')}.png`
       link.href = canvas.toDataURL('image/png')
@@ -69,7 +65,6 @@ export function QRCodeDisplay({ pet }: QRCodeDisplayProps) {
         // User cancelled or share failed
       }
     } else {
-      // Fallback: copy to clipboard
       await navigator.clipboard.writeText(petUrl)
       alert('Enlace copiado al portapapeles')
     }

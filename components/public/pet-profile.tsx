@@ -9,10 +9,10 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { 
   PawPrint, 
-  Phone, 
   AlertTriangle, 
   MapPin, 
   MessageSquare,
+  MessageCircle,
   Send,
   Loader2,
   Check
@@ -38,11 +38,9 @@ export function PublicPetProfile({ pet }: PublicPetProfileProps) {
   const [sent, setSent] = useState(false)
   const [scanLogged, setScanLogged] = useState(false)
 
-  // Get user location and log the scan on page load
   useEffect(() => {
     if (scanLogged) return
 
-    // Get location
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -51,13 +49,10 @@ export function PublicPetProfile({ pet }: PublicPetProfileProps) {
             lng: position.coords.longitude,
           })
         },
-        () => {
-          // Location denied or unavailable - still log the scan
-        }
+        () => {}
       )
     }
 
-    // Log the scan
     const logScan = async () => {
       try {
         await fetch('/api/scan', {
@@ -75,7 +70,6 @@ export function PublicPetProfile({ pet }: PublicPetProfileProps) {
       }
     }
 
-    // Small delay to allow location to be captured
     const timer = setTimeout(logScan, 1000)
     return () => clearTimeout(timer)
   }, [pet.id, location, scanLogged])
@@ -109,9 +103,19 @@ export function PublicPetProfile({ pet }: PublicPetProfileProps) {
     ? Math.floor((Date.now() - new Date(pet.birth_date).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
     : null
 
+  const getWhatsAppLink = () => {
+    if (!pet.profiles?.phone) return null
+    const cleanPhone = pet.profiles.phone.replace(/[\s\-\(\)\+]/g, '')
+    const msg = encodeURIComponent(
+      `Hola! Encontré a tu mascota ${pet.name} y escanee su codigo QR. ¿Podemos coordinar para devolvértela?`
+    )
+    return `https://wa.me/${cleanPhone}?text=${msg}`
+  }
+
+  const whatsappLink = getWhatsAppLink()
+
   return (
     <div className="min-h-svh bg-background">
-      {/* Lost banner */}
       {pet.is_lost && (
         <div className="bg-destructive text-destructive-foreground py-3 px-4">
           <div className="container mx-auto flex items-center justify-center gap-2">
@@ -122,7 +126,6 @@ export function PublicPetProfile({ pet }: PublicPetProfileProps) {
       )}
 
       <div className="container mx-auto max-w-lg px-4 py-8">
-        {/* Header */}
         <div className="flex items-center justify-center gap-2 text-primary mb-8">
           <PawPrint className="h-7 w-7" />
           <span className="text-xl font-bold">PetTag</span>
@@ -130,7 +133,6 @@ export function PublicPetProfile({ pet }: PublicPetProfileProps) {
 
         {/* Pet card */}
         <Card className="mb-6 overflow-hidden">
-          {/* Photo */}
           <div className="aspect-square relative bg-muted">
             {pet.photo_url ? (
               <Image
@@ -188,23 +190,31 @@ export function PublicPetProfile({ pet }: PublicPetProfileProps) {
           </CardContent>
         </Card>
 
-        {/* Owner contact */}
+        {/* Contact card */}
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle className="text-lg">Contactar al dueno</CardTitle>
+            <CardTitle className="text-lg">Contactar al dueño</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {pet.profiles?.full_name && (
-              <p className="font-medium">{pet.profiles.full_name}</p>
+              <p className="font-medium text-lg">{pet.profiles.full_name}</p>
             )}
-            
-            {pet.profiles?.phone && (
-              <Button className="w-full" size="lg" asChild>
-                <a href={`tel:${pet.profiles.phone}`}>
-                  <Phone className="h-5 w-5 mr-2" />
-                  Llamar: {pet.profiles.phone}
+
+            {whatsappLink ? (
+              <Button
+                className="w-full bg-green-500 hover:bg-green-600 text-white"
+                size="lg"
+                asChild
+              >
+                <a href={whatsappLink} target="_blank" rel="noopener noreferrer">
+                  <MessageCircle className="h-5 w-5 mr-2" />
+                  Contactar por WhatsApp
                 </a>
               </Button>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                El dueño no ha registrado un número de contacto.
+              </p>
             )}
 
             {location && (
@@ -221,7 +231,7 @@ export function PublicPetProfile({ pet }: PublicPetProfileProps) {
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <MessageSquare className="h-5 w-5" />
-              Enviar mensaje al dueno
+              Dejar un mensaje
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -232,7 +242,7 @@ export function PublicPetProfile({ pet }: PublicPetProfileProps) {
                 </div>
                 <h3 className="font-semibold mb-2">Mensaje enviado</h3>
                 <p className="text-sm text-muted-foreground">
-                  El dueno ha sido notificado. Gracias por tu ayuda.
+                  El dueño ha sido notificado. Gracias por tu ayuda.
                 </p>
               </div>
             ) : (
@@ -274,7 +284,6 @@ export function PublicPetProfile({ pet }: PublicPetProfileProps) {
           </CardContent>
         </Card>
 
-        {/* Footer */}
         <p className="text-center text-xs text-muted-foreground mt-8">
           Protegido con PetTag - Sistema de identificacion QR para mascotas
         </p>
