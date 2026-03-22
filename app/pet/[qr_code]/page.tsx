@@ -4,6 +4,8 @@ import { PublicPetProfile } from '@/components/public/pet-profile'
 import type { Pet } from '@/lib/types'
 import type { Metadata } from 'next'
 
+export const dynamic = 'force-dynamic'  // ← esto es lo nuevo
+
 interface PageProps {
   params: Promise<{ qr_code: string }>
 }
@@ -19,9 +21,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     .single()
 
   if (!pet) {
-    return {
-      title: 'Mascota no encontrada - PetTag',
-    }
+    return { title: 'Mascota no encontrada - PetTag' }
   }
 
   return {
