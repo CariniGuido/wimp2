@@ -5,11 +5,11 @@ import type { Pet } from '@/lib/types'
 import type { Metadata } from 'next'
 
 interface PageProps {
-  params: { qr_code: string }
+  params: Promise<{ qr_code: string }>
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { qr_code } = params
+  const { qr_code } = await params
   const supabase = await createClient()
 
   const { data: pet } = await supabase
@@ -36,7 +36,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function PublicPetPage({ params }: PageProps) {
-  const { qr_code } = params
+  const { qr_code } = await params
   const supabase = await createClient()
 
   const { data: pet, error } = await supabase
