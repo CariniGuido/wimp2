@@ -20,6 +20,7 @@ import {
 import Image from 'next/image'
 import type { Pet } from '@/lib/types'
 import { speciesLabels } from '@/lib/types'
+import { createClient } from '@/lib/supabase/client'
 
 interface PublicPetProfileProps {
   pet: Pet & { 
@@ -55,6 +56,14 @@ export function PublicPetProfile({ pet }: PublicPetProfileProps) {
 
     const logScan = async () => {
       try {
+        // Si el dueño está viendo su propia mascota, no contar el escaneo
+        const supabase = createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user && user.id === pet.user_id) {
+          setScanLogged(true)
+          return
+        }
+
         await fetch('/api/scan', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -72,7 +81,7 @@ export function PublicPetProfile({ pet }: PublicPetProfileProps) {
 
     const timer = setTimeout(logScan, 1000)
     return () => clearTimeout(timer)
-  }, [pet.id, location, scanLogged])
+  }, [pet.id, pet.user_id, location, scanLogged])
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault()
