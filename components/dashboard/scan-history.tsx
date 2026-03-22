@@ -20,17 +20,16 @@ type TimelineItem = {
 }
 
 export function ScanHistory({ scans, events }: ScanHistoryProps) {
-  // Combine and sort scans and events
   const timeline: TimelineItem[] = [
-    ...scans.map((scan) => ({
+    ...scans.map((scan: any) => ({
       id: scan.id,
       type: 'scan' as const,
       date: scan.scanned_at,
-      description: scan.finder_message || 'Codigo QR escaneado',
-      location: scan.latitude && scan.longitude 
-        ? { lat: scan.latitude, lng: scan.longitude }
+      description: scan.scanner_message || 'Codigo QR escaneado',
+      location: scan.scanner_location_lat && scan.scanner_location_lng
+        ? { lat: scan.scanner_location_lat, lng: scan.scanner_location_lng }
         : undefined,
-      contact: scan.finder_contact || undefined,
+      contact: scan.scanner_contact || undefined,
     })),
     ...events.map((event) => ({
       id: event.id,
@@ -83,10 +82,15 @@ export function ScanHistory({ scans, events }: ScanHistoryProps) {
                 </div>
                 <p className="text-sm">{item.description}</p>
                 {item.location && (
-                  <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                  <a
+                    href={`https://maps.google.com/?q=${item.location.lat},${item.location.lng}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-primary flex items-center gap-1 mt-1 hover:underline"
+                  >
                     <MapPin className="h-3 w-3" />
-                    {item.location.lat.toFixed(4)}, {item.location.lng.toFixed(4)}
-                  </p>
+                    Ver en mapa ({item.location.lat.toFixed(4)}, {item.location.lng.toFixed(4)})
+                  </a>
                 )}
                 {item.contact && (
                   <p className="text-xs text-primary mt-1">
@@ -104,70 +108,48 @@ export function ScanHistory({ scans, events }: ScanHistoryProps) {
 
 function getEventDescription(type: string): string {
   switch (type) {
-    case 'lost':
-      return 'Mascota marcada como perdida'
-    case 'found':
-      return 'Mascota marcada como encontrada'
-    case 'sighting':
-      return 'Avistamiento reportado'
-    default:
-      return 'Evento registrado'
+    case 'lost': return 'Mascota marcada como perdida'
+    case 'found': return 'Mascota marcada como encontrada'
+    case 'sighting': return 'Avistamiento reportado'
+    default: return 'Evento registrado'
   }
 }
 
 function getIcon(type: string) {
   switch (type) {
-    case 'scan':
-      return <QrCode className="h-5 w-5 text-primary" />
-    case 'lost':
-      return <AlertTriangle className="h-5 w-5 text-destructive" />
-    case 'found':
-      return <Check className="h-5 w-5 text-green-600" />
-    case 'sighting':
-      return <Eye className="h-5 w-5 text-blue-600" />
-    default:
-      return <QrCode className="h-5 w-5 text-muted-foreground" />
+    case 'scan': return <QrCode className="h-5 w-5 text-primary" />
+    case 'lost': return <AlertTriangle className="h-5 w-5 text-destructive" />
+    case 'found': return <Check className="h-5 w-5 text-green-600" />
+    case 'sighting': return <Eye className="h-5 w-5 text-blue-600" />
+    default: return <QrCode className="h-5 w-5 text-muted-foreground" />
   }
 }
 
 function getIconBg(type: string): string {
   switch (type) {
-    case 'scan':
-      return 'bg-primary/10'
-    case 'lost':
-      return 'bg-destructive/10'
-    case 'found':
-      return 'bg-green-100'
-    case 'sighting':
-      return 'bg-blue-100'
-    default:
-      return 'bg-muted'
+    case 'scan': return 'bg-primary/10'
+    case 'lost': return 'bg-destructive/10'
+    case 'found': return 'bg-green-100'
+    case 'sighting': return 'bg-blue-100'
+    default: return 'bg-muted'
   }
 }
 
 function getBadgeVariant(type: string): 'default' | 'secondary' | 'destructive' | 'outline' {
   switch (type) {
-    case 'lost':
-      return 'destructive'
-    case 'found':
-      return 'default'
-    default:
-      return 'secondary'
+    case 'lost': return 'destructive'
+    case 'found': return 'default'
+    default: return 'secondary'
   }
 }
 
 function getTypeLabel(type: string): string {
   switch (type) {
-    case 'scan':
-      return 'Escaneo'
-    case 'lost':
-      return 'Perdido'
-    case 'found':
-      return 'Encontrado'
-    case 'sighting':
-      return 'Avistamiento'
-    default:
-      return 'Evento'
+    case 'scan': return 'Escaneo'
+    case 'lost': return 'Perdido'
+    case 'found': return 'Encontrado'
+    case 'sighting': return 'Avistamiento'
+    default: return 'Evento'
   }
 }
 
@@ -179,16 +161,8 @@ function formatDate(dateString: string): string {
   const diffHours = Math.floor(diffMs / 3600000)
   const diffDays = Math.floor(diffMs / 86400000)
 
-  if (diffMins < 60) {
-    return `hace ${diffMins} min`
-  } else if (diffHours < 24) {
-    return `hace ${diffHours}h`
-  } else if (diffDays < 7) {
-    return `hace ${diffDays}d`
-  } else {
-    return date.toLocaleDateString('es-MX', {
-      day: 'numeric',
-      month: 'short',
-    })
-  }
+  if (diffMins < 60) return `hace ${diffMins} min`
+  if (diffHours < 24) return `hace ${diffHours}h`
+  if (diffDays < 7) return `hace ${diffDays}d`
+  return date.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })
 }
