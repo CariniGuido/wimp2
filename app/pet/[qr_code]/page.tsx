@@ -37,6 +37,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function PublicPetPage({ params }: PageProps) {
   const { qr_code } = await params
+
+  console.log('=== DEBUG QR ===')
+  console.log('QR CODE RECIBIDO:', qr_code)
+
   const supabase = await createClient()
 
   const { data: pet, error } = await supabase
@@ -50,6 +54,9 @@ export default async function PublicPetPage({ params }: PageProps) {
     `)
     .eq('qr_code', qr_code.trim())
     .single()
+
+  console.log('PET ENCONTRADO:', pet ? pet.name : 'null')
+  console.log('ERROR:', error ? error.message : 'ninguno')
 
   if (error || !pet) {
     console.log('Error buscando mascota:', error)
