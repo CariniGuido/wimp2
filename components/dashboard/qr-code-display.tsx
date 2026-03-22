@@ -13,7 +13,7 @@ interface QRCodeDisplayProps {
 
 export function QRCodeDisplay({ pet }: QRCodeDisplayProps) {
   const qrRef = useRef<HTMLDivElement>(null)
-  const petUrl = `https://v0-pettag.vercel.app/pet/${pet.qr_code}`
+  const petUrl = `${window.location.origin}/pet/${pet.qr_code}`
 
   const handleDownload = () => {
     const svg = qrRef.current?.querySelector('svg')
