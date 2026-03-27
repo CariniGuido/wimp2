@@ -18,6 +18,7 @@ import {
   Check
 } from 'lucide-react'
 import Image from 'next/image'
+import Link from 'next/link'
 import type { Pet } from '@/lib/types'
 import { speciesLabels } from '@/lib/types'
 import { createClient } from '@/lib/supabase/client'
@@ -135,10 +136,16 @@ export function PublicPetProfile({ pet }: PublicPetProfileProps) {
       )}
 
       <div className="container mx-auto max-w-lg px-4 py-8">
-        <div className="flex items-center justify-center gap-2 text-primary mb-8">
-          <PawPrint className="h-7 w-7" />
-          <span className="text-xl font-bold">PetTag</span>
-        </div>
+        {/* Logo clickeable que lleva a la landing page */}
+        <Link href="/" className="block">
+          <div className="flex items-center justify-center gap-2 text-primary mb-2 hover:opacity-80 transition-opacity">
+            <PawPrint className="h-7 w-7" />
+            <span className="text-xl font-bold">PetTag</span>
+          </div>
+        </Link>
+        <p className="text-center text-xs text-muted-foreground mb-8">
+          Sistema de identificación QR para mascotas
+        </p>
 
         {/* Pet card */}
         <Card className="mb-6 overflow-hidden">
@@ -293,9 +300,18 @@ export function PublicPetProfile({ pet }: PublicPetProfileProps) {
           </CardContent>
         </Card>
 
-        <p className="text-center text-xs text-muted-foreground mt-8">
-          Protegido con PetTag - Sistema de identificacion QR para mascotas
-        </p>
+        {/* Footer mejorado */}
+        <div className="mt-8 text-center space-y-3">
+          <p className="text-xs text-muted-foreground">
+            Protegido con PetTag - Sistema de identificacion QR para mascotas
+          </p>
+          <Link href="/">
+            <Button variant="outline" size="sm" className="gap-2">
+              <PawPrint className="h-4 w-4" />
+              ¿Quieres proteger a tu mascota? Regístrate aquí
+            </Button>
+          </Link>
+        </div>
       </div>
     </div>
   )
