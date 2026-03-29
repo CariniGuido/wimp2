@@ -14,6 +14,7 @@ import {
 import { PawPrint, Home, Plus, User, LogOut, Menu } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
+import { PushNotificationButton } from '@/components/dashboard/push-notification-button'
 
 interface DashboardNavProps {
   user: SupabaseUser
@@ -63,6 +64,8 @@ export function DashboardNav({ user }: DashboardNavProps) {
         </div>
 
         <div className="flex items-center gap-2">
+          <PushNotificationButton />
+
           {/* Mobile menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild className="md:hidden">
